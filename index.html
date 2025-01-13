@@ -6,6 +6,7 @@
     <title>Custom Barcode Label Generator</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -139,6 +140,7 @@
             </select>
         </div>
         <button onclick="downloadPDF()">Download PDF</button>
+        <button onclick="downloadExcel()">Download Excel</button>
         <button onclick="previewLastLabel()">Show Last Label</button>
         <div class="preview-section">
             <canvas id="previewLabelCanvas" width="590" height="295"></canvas>
@@ -360,6 +362,31 @@ function downloadPDF() {
 
     doc.save('barcode_labels.pdf');
 }
+        function downloadExcel() {
+    const barcodesList = document.getElementById('barcodesList').value.trim().split("\n").map(line => line.trim()).filter(line => line);
+
+    if (barcodesList.length === 0) {
+        alert("Please enter at least one barcode.");
+        return;
+    }
+
+    // Create an array for the Excel file, with the first row being headers (Name and Code)
+    const data = [['Name', 'Code']];
+    
+    // Populate the data with empty names and corresponding barcodes in the "Code" column
+    barcodesList.forEach(barcode => {
+        data.push(['', barcode]);
+    });
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Barcodes');
+
+    // Download the Excel file
+    XLSX.writeFile(workbook, 'barcodes.xlsx');
+}
+
 
     </script>
 </body>
