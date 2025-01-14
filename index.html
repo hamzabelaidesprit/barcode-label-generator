@@ -324,26 +324,19 @@ function generatePreviewLabel(barcodeInput, companyName, companyFontStyle) {
 
 function downloadPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    // Create a PDF document with landscape orientation (50mm x 25mm label on each page)
+    const doc = new jsPDF('l', 'mm', [50, 25]);  // 'l' for landscape orientation
 
     const companyName = document.getElementById('companyNameList').value;
     const companyFontStyleList = document.getElementById('companyFontStyleList').value;  // Get font style for Section 2
     const barcodesList = document.getElementById('barcodesList').value.trim().split("\n").map(line => line.trim()).filter(line => line);
 
-    const labelWidth = 50;
-    const labelHeight = 25;
-    const margin = 5;
-    const spacing = 5;
+    const labelWidth = 50;  // Label width in mm (same as page width)
+    const labelHeight = 25; // Label height in mm (same as page height)
 
-    const pageWidth = 210;
-    const pageHeight = 297;
-
-    const labelsPerRow = Math.floor((pageWidth - margin * 2) / (labelWidth + spacing));
-    const labelsPerColumn = Math.floor((pageHeight - margin * 2) / (labelHeight + spacing));
-    const totalLabelsPerPage = labelsPerRow * labelsPerColumn;
-
-    let xPos = margin;
-    let yPos = margin;
+    let xPos = 0;
+    let yPos = 0;
 
     barcodesList.forEach((barcode, index) => {
         generatePreviewLabel(barcode, companyName, companyFontStyleList);  // Generate preview for the current barcode
@@ -351,22 +344,15 @@ function downloadPDF() {
         const imageData = previewCanvas.toDataURL('image/png');  // Get image data from the preview canvas
         doc.addImage(imageData, 'PNG', xPos, yPos, labelWidth, labelHeight);  // Add label to the PDF
 
-        xPos += labelWidth + spacing;
-
-        if ((index + 1) % labelsPerRow === 0) {
-            xPos = margin;
-            yPos += labelHeight + spacing;
-        }
-
-        if ((index + 1) % totalLabelsPerPage === 0 && index < barcodesList.length - 1) {
-            doc.addPage();
-            xPos = margin;
-            yPos = margin;
+        // After adding the label to the current page, create a new page if it's not the last label
+        if (index < barcodesList.length - 1) {
+            doc.addPage();  // Add a new page for the next label
         }
     });
 
     doc.save('barcode_labels.pdf');
 }
+
         function downloadExcel() {
     const barcodesList = document.getElementById('barcodesList').value.trim().split("\n").map(line => line.trim()).filter(line => line);
 
